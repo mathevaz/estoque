@@ -1,11 +1,49 @@
-// Variável global para controlar o gráfico (para podermos atualizar ele)
+// --- IMPORTAÇÃO DO FIREBASE (Não mexa aqui) ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+// --- CONFIGURAÇÃO ---
+// ⚠️ SUBSTITUA O CÓDIGO ABAIXO PELO QUE COPIASTE DO SITE DO FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyDnGDlAu9lNqrAN72kwmL256utQhhmicxY",
+  authDomain: "estoque-loja-app.firebaseapp.com",
+  projectId: "estoque-loja-app",
+  storageBucket: "estoque-loja-app.firebasestorage.app",
+  messagingSenderId: "909627341400",
+  appId: "1:909627341400:web:0a3a5fb8dc8de44637682d"
+};
+
+// Inicializando o Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const produtosRef = collection(db, "produtos"); // Nome da tabela no banco
+
+// Variável global para o gráfico
 let chartInstance = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    carregarDados();
+// --- FUNÇÕES GLOBAIS (Para o HTML conseguir ver) ---
+// Como usamos 'module', precisamos "pendurar" as funções na janela (window)
+window.adicionarProduto = adicionarProduto;
+window.alterarQtd = alterarQtd;
+window.deletarProduto = deletarProduto;
+window.filtrarProdutos = filtrarProdutos;
+
+// --- ESCUTAR O BANCO DE DADOS (Tempo Real) ---
+// Em vez de carregarDados(), usamos onSnapshot.
+// Ele roda SOZINHO sempre que algo muda no banco (seja no PC ou no celular).
+onSnapshot(produtosRef, (snapshot) => {
+    let lista = [];
+    snapshot.docs.forEach(doc => {
+        lista.push({ ...doc.data(), id: doc.id });
+    });
+    
+    // Atualiza a tela sempre que receber dados novos
+    renderizarTabela(lista);
+    window.listaGlobal = lista; // Guarda numa variável para a busca funcionar
 });
 
-function adicionarProduto() {
+// --- ADICIONAR ---
+async function adicionarProduto() {
     let nome = document.getElementById('produto').value;
     let qtd = Number(document.getElementById('quantidade').value);
     let custo = Number(document.getElementById('custo').value);
@@ -16,79 +54,85 @@ function adicionarProduto() {
         return;
     }
 
-    let produto = {
-        nome: nome,
-        qtd: qtd,
-        custo: custo,
-        venda: venda,
-        id: Date.now()
-    };
-
-    let lista = lerEstoque();
-    lista.push(produto);
-    salvarEstoque(lista);
-    
-    limparCampos();
-    carregarDados();
-}
-
-function alterarQtd(id, valor) {
-    let lista = lerEstoque();
-    let index = lista.findIndex(p => p.id === id);
-    
-    if (index !== -1) {
-        lista[index].qtd += valor;
-        if (lista[index].qtd < 0) lista[index].qtd = 0;
-        salvarEstoque(lista);
-        carregarDados();
+    try {
+        await addDoc(produtosRef, {
+            nome: nome,
+            qtd: qtd,
+            custo: custo,
+            venda: venda,
+            dataCriacao: Date.now()
+        });
+        limparCampos();
+    } catch (e) {
+        console.error("Erro ao adicionar: ", e);
+        alert("Erro ao salvar na nuvem!");
     }
 }
 
-function deletarProduto(id) {
+// --- ALTERAR QUANTIDADE ---
+async function alterarQtd(id, valor, qtdAtual) {
+    let novaQtd = qtdAtual + valor;
+    if (novaQtd < 0) novaQtd = 0;
+
+    const itemRef = doc(db, "produtos", id);
+    await updateDoc(itemRef, {
+        qtd: novaQtd
+    });
+}
+
+// --- DELETAR ---
+async function deletarProduto(id) {
     if(confirm("Apagar este produto?")) {
-        let lista = lerEstoque();
-        let novaLista = lista.filter(p => p.id !== id);
-        salvarEstoque(novaLista);
-        carregarDados();
+        await deleteDoc(doc(db, "produtos", id));
     }
 }
 
+// --- FILTRO DE BUSCA (Local) ---
 function filtrarProdutos() {
     let termo = document.getElementById('campo-busca').value.toLowerCase();
-    carregarDados(termo);
+    if(window.listaGlobal) {
+        let filtrados = window.listaGlobal.filter(item => 
+            item.nome.toLowerCase().includes(termo)
+        );
+        renderizarTabela(filtrados);
+    }
 }
 
-function carregarDados(filtro = "") {
+// --- RENDERIZAR TELA (Tabela + Gráfico + Cards) ---
+function renderizarTabela(lista) {
     let tabela = document.getElementById('lista-estoque');
     tabela.innerHTML = "";
-    
-    let lista = lerEstoque();
     
     let totalItens = 0;
     let valorTotal = 0;
     let alertas = 0;
 
+    // Ordenar por nome
+    lista.sort((a, b) => a.nome.localeCompare(b.nome));
+
     lista.forEach(item => {
-        // Cálculos do Dashboard
+        // Cálculos
         totalItens += item.qtd;
         valorTotal += (item.custo * item.qtd);
         if (item.qtd < 3) alertas++;
 
-        // Filtro de Busca
-        if (filtro && !item.nome.toLowerCase().includes(filtro)) return;
+        let lucro = 0;
+        if(item.custo > 0) {
+             lucro = (((item.venda - item.custo) / item.custo) * 100).toFixed(0);
+        }
 
-        // Renderizar Tabela
-        let lucro = (((item.venda - item.custo) / item.custo) * 100).toFixed(0);
         let linha = tabela.insertRow();
         
+        // Nome
         let nomeHTML = item.nome;
         if(item.qtd < 3) nomeHTML += ` <span class="tag-alerta">Baixo</span>`;
         linha.insertCell(0).innerHTML = nomeHTML;
 
+        // Qtd com botões (Passamos a qtd atual para a função)
         linha.insertCell(1).innerHTML = `
-            <button class="btn-mini btn-menos" onclick="alterarQtd(${item.id}, -1)"><i class="fas fa-minus"></i></button>
+            <button class="btn-mini btn-menos" onclick="alterarQtd('${item.id}', -1, ${item.qtd})"><i class="fas fa-minus"></i></button>
             <span style="margin:0 10px; font-weight:bold">${item.qtd}</span>
-            <button class="btn-mini btn-mais" onclick="alterarQtd(${item.id}, 1)"><i class="fas fa-plus"></i></button>
+            <button class="btn-mini btn-mais" onclick="alterarQtd('${item.id}', 1, ${item.qtd})"><i class="fas fa-plus"></i></button>
         `;
 
         linha.insertCell(2).innerText = `R$ ${item.custo.toFixed(2)}`;
@@ -96,7 +140,7 @@ function carregarDados(filtro = "") {
         linha.insertCell(4).innerHTML = `<span class="lucro-bom">${lucro}%</span>`;
         
         linha.insertCell(5).innerHTML = `
-            <button class="btn-mini btn-lixo" onclick="deletarProduto(${item.id})"><i class="fas fa-trash"></i></button>
+            <button class="btn-mini btn-lixo" onclick="deletarProduto('${item.id}')"><i class="fas fa-trash"></i></button>
         `;
     });
 
@@ -105,18 +149,10 @@ function carregarDados(filtro = "") {
     document.getElementById('valor-estoque').innerText = `R$ ${valorTotal.toFixed(2)}`;
     document.getElementById('alertas-qtd').innerText = alertas;
 
-    // Atualiza o gráfico
+    // Atualiza Gráfico
     atualizarGrafico(lista);
 }
 
-// --- FUNÇÕES AUXILIARES ---
-
-function lerEstoque() {
-    return JSON.parse(localStorage.getItem('meuEstoquePro')) || [];
-}
-function salvarEstoque(lista) {
-    localStorage.setItem('meuEstoquePro', JSON.stringify(lista));
-}
 function limparCampos() {
     document.getElementById('produto').value = "";
     document.getElementById('quantidade').value = "";
@@ -124,49 +160,33 @@ function limparCampos() {
     document.getElementById('venda').value = "";
 }
 
-// --- LÓGICA DO GRÁFICO (Chart.js) ---
+// --- GRÁFICO (Chart.js) ---
 function atualizarGrafico(lista) {
     const ctx = document.getElementById('meuGrafico').getContext('2d');
-
-    // Ordenar a lista para pegar os top 5 com mais quantidade
-    // O comando 'sort' organiza do maior para o menor (b - a)
-    let topProdutos = lista.sort((a, b) => b.qtd - a.qtd).slice(0, 5);
-
-    // Preparar dados para o gráfico
+    // Top 5 produtos
+    let topProdutos = [...lista].sort((a, b) => b.qtd - a.qtd).slice(0, 5);
     let nomes = topProdutos.map(p => p.nome);
     let quantidades = topProdutos.map(p => p.qtd);
 
-    // Se já existe um gráfico, destrói ele antes de criar um novo (para não sobrepor)
     if (chartInstance) {
         chartInstance.destroy();
     }
 
-    // Criar novo gráfico
     chartInstance = new Chart(ctx, {
-        type: 'bar', // Tipo barra (pode ser 'pie', 'line', etc.)
+        type: 'bar',
         data: {
             labels: nomes,
             datasets: [{
-                label: 'Quantidade em Estoque',
+                label: 'Top 5 Estoque',
                 data: quantidades,
-                backgroundColor: [
-                    'rgba(156, 39, 176, 0.7)', // Roxo
-                    'rgba(54, 162, 235, 0.7)', // Azul
-                    'rgba(255, 206, 86, 0.7)', // Amarelo
-                    'rgba(75, 192, 192, 0.7)', // Verde
-                    'rgba(255, 99, 132, 0.7)'  // Vermelho
-                ],
+                backgroundColor: 'rgba(156, 39, 176, 0.7)',
                 borderWidth: 1
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
+            scales: { y: { beginAtZero: true } }
         }
     });
 }
