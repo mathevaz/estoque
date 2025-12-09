@@ -1,0 +1,102 @@
+/* CONFIGURAÇÕES GERAIS */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { display: flex; min-height: 100vh; background-color: #f3f4f7; }
+
+/* MENU LATERAL */
+.sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #9c27b0, #7b1fa2);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+.sidebar h2 { font-size: 24px; margin-bottom: 40px; text-align: center; letter-spacing: 1px; }
+.menu-item {
+    padding: 15px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+.menu-item:hover, .menu-item.ativo {
+    background-color: rgba(255,255,255,0.2);
+    color: white;
+}
+.menu-item i { margin-right: 10px; width: 20px; text-align: center; }
+
+/* ÁREA PRINCIPAL */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* CARTÕES DE RESUMO */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.card-resumo {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.card-info h3 { font-size: 28px; color: #333; }
+.card-info p { color: #777; font-size: 14px; }
+.card-icon { font-size: 40px; opacity: 0.2; }
+.cor-roxo { color: #9c27b0; }
+.cor-verde { color: #28a745; }
+.cor-laranja { color: #ff9800; }
+
+/* PAINÉIS */
+.painel {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+.painel-header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+
+/* FORMULÁRIO */
+.input-group { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+input { padding: 12px; border: 1px solid #ddd; border-radius: 6px; width: 100%; outline: none; }
+input:focus { border-color: #9c27b0; }
+
+button.btn-principal {
+    width: 100%; padding: 12px; background-color: #9c27b0; color: white;
+    border: none; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.3s;
+}
+button.btn-principal:hover { background-color: #7b1fa2; }
+
+/* BARRA DE PESQUISA */
+.search-box {
+    width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd;
+    border-radius: 20px; padding-left: 15px; background-color: #f9f9f9;
+}
+
+/* TABELA */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { text-align: left; padding: 15px; color: #555; border-bottom: 2px solid #eee; font-size: 14px; }
+td { padding: 15px; border-bottom: 1px solid #eee; color: #333; vertical-align: middle; }
+
+/* BOTÕES AUXILIARES */
+.btn-mini { border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; margin: 0 2px; }
+.btn-mais { background-color: #4caf50; }
+.btn-menos { background-color: #ff9800; }
+.btn-lixo { background-color: #f44336; }
+
+/* ALERTAS */
+.tag-alerta { background-color: #ffebee; color: #c62828; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+.lucro-bom { color: #2e7d32; font-weight: bold; }

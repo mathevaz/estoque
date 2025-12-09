@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEPS Estoque</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>PEPS</h2>
+        <div class="menu-item ativo"><i class="fas fa-box"></i> Estoque</div>
+        <div class="menu-item"><i class="fas fa-chart-line"></i> Relatórios</div>
+        <div class="menu-item"><i class="fas fa-cog"></i> Configurações</div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="cards-container">
+            <div class="card-resumo">
+                <div class="card-info">
+                    <h3 id="total-itens">0</h3>
+                    <p>Itens em Estoque</p>
+                </div>
+                <i class="fas fa-boxes card-icon cor-roxo"></i>
+            </div>
+            <div class="card-resumo">
+                <div class="card-info">
+                    <h3 id="valor-estoque">R$ 0,00</h3>
+                    <p>Valor Investido</p>
+                </div>
+                <i class="fas fa-wallet card-icon cor-verde"></i>
+            </div>
+            <div class="card-resumo">
+                <div class="card-info">
+                    <h3 id="alertas-qtd">0</h3>
+                    <p>Produtos Acabando</p>
+                </div>
+                <i class="fas fa-exclamation-triangle card-icon cor-laranja"></i>
+            </div>
+        </div>
+
+        <div class="painel">
+            <div class="painel-header">
+                <h3>📊 Top 5 Produtos em Estoque</h3>
+            </div>
+            <div style="height: 300px; position: relative;">
+                <canvas id="meuGrafico"></canvas>
+            </div>
+        </div>
+
+        <div class="painel">
+            <div class="painel-header">
+                <h3>Cadastrar Produto</h3>
+            </div>
+            <div class="input-group">
+                <input type="text" id="produto" placeholder="Nome do Produto">
+                <input type="number" id="quantidade" placeholder="Qtd">
+                <input type="number" id="custo" placeholder="Custo Un.">
+                <input type="number" id="venda" placeholder="Venda Un.">
+            </div>
+            <button class="btn-principal" onclick="adicionarProduto()">Salvar no Estoque</button>
+        </div>
+
+        <div class="painel">
+            <div class="painel-header">
+                <h3>Lista de Produtos</h3>
+            </div>
+            
+            <input type="text" id="campo-busca" class="search-box" placeholder="🔍 Pesquisar produto..." onkeyup="filtrarProdutos()">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd.</th>
+                        <th>Custo</th>
+                        <th>Venda</th>
+                        <th>Lucro</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-estoque">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
