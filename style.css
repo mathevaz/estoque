@@ -100,3 +100,65 @@ td { padding: 15px; border-bottom: 1px solid #eee; color: #333; vertical-align: 
 /* ALERTAS */
 .tag-alerta { background-color: #ffebee; color: #c62828; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 .lucro-bom { color: #2e7d32; font-weight: bold; }
+/* --- RESPONSIVIDADE (PARA TELEMÓVEL) --- */
+@media (max-width: 768px) {
+    /* Muda a direção: em vez de lado a lado, fica um em cima do outro */
+    body {
+        flex-direction: column;
+    }
+
+    /* Transforma a Lateral numa Barra no Fundo */
+    .sidebar {
+        width: 100%;       /* Ocupa a largura toda */
+        height: auto;      /* Altura automática */
+        position: fixed;   /* Cola na tela */
+        bottom: 0;         /* Cola no fundo */
+        left: 0;
+        z-index: 1000;     /* Garante que fica por cima de tudo */
+        flex-direction: row; /* Itens lado a lado */
+        justify-content: space-around; /* Espalha os itens */
+        padding: 10px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Esconde o título "PEPS" no celular para poupar espaço */
+    .sidebar h2 {
+        display: none;
+    }
+
+    /* Ajusta os botões do menu */
+    .menu-item {
+        margin-bottom: 0;
+        padding: 5px;
+        font-size: 12px; /* Letra menor */
+        display: flex;
+        flex-direction: column; /* Ícone em cima do texto */
+        align-items: center;
+    }
+    
+    .menu-item i {
+        margin-right: 0;
+        margin-bottom: 5px;
+        font-size: 20px; /* Ícone maior */
+    }
+
+    /* Ajusta o conteúdo principal para não ficar escondido atrás da barra */
+    .main-content {
+        padding: 15px;
+        margin-bottom: 80px; /* Espaço extra no fundo */
+    }
+
+    /* Ajusta o formulário para ficar uma coluna só */
+    .input-group {
+        grid-template-columns: 1fr; /* 1 coluna */
+        gap: 10px;
+    }
+    
+    /* Esconde a coluna "Custo" e "Lucro" na tabela do celular para caber melhor */
+    /* (Opcional: remove estas linhas se quiseres ver tudo apertado) */
+    th:nth-child(3), td:nth-child(3), /* Custo */
+    th:nth-child(5), td:nth-child(5)  /* Lucro */
+    {
+        display: none;
+    }
+}
